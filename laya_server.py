@@ -179,10 +179,14 @@ def run_inference(text: str, question: str = "") -> dict:
     attention_mask = tokens["attention_mask"].astype(np.int64)
 
     # Build marker inputs for a noul question
-    # Model requires min_markers=2 — provide 2 positions, second masked
+    # Model requires min_markers=2 — provide 2 positions, second masked.
+    # Both positions must be in [0, 511]; use the same valid position since
+    # the second marker is masked out anyway.
     seq_len = int(np.sum(attention_mask[0]))
-    marker_pos = np.array([[seq_len - 1, seq_len]], dtype=np.int64)  # [1, 2]
-    marker_mask = np.array([[True, False]], dtype=bool)            # [1, 2]
+    pos = min(seq_len - 1, 511)  # last real token, clamped to valid range
+    pos = max(pos, 0)            # avoid negative for degenerate cases
+    marker_pos = np.array([[pos, pos]], dtype=np.int64)  # [1, 2] — same pos, 2nd masked
+    marker_mask = np.array([[True, False]], dtype=bool)  # [1, 2]
     qtype = np.array([2], dtype=np.int64)  # 2 = noul
 
     feeds = {
