@@ -96,7 +96,6 @@ def download_model():
 
     model_path = hf_hub_download(
         repo_id=MODEL_REPO,
-        repo_type="model",
         filename=f"{MODEL_SUBFOLDER}/{MODEL_FILENAME}",
     )
     log.info("Model: %s (%.1f MB)", model_path, os.path.getsize(model_path) / (1024 * 1024))
@@ -180,9 +179,10 @@ def run_inference(text: str, question: str = "") -> dict:
     attention_mask = tokens["attention_mask"].astype(np.int64)
 
     # Build marker inputs for a noul question
+    # Model requires min_markers=2 — provide 2 positions, second masked
     seq_len = int(np.sum(attention_mask[0]))
-    marker_pos = np.array([[seq_len - 1]], dtype=np.int64)
-    marker_mask = np.array([[True, False]], dtype=bool)
+    marker_pos = np.array([[seq_len - 1, seq_len]], dtype=np.int64)  # [1, 2]
+    marker_mask = np.array([[True, False]], dtype=bool)            # [1, 2]
     qtype = np.array([2], dtype=np.int64)  # 2 = noul
 
     feeds = {
