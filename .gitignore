@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Model cache (user can set HF_HOME to custom location)
+.huggingface/
+.cache/huggingface/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
