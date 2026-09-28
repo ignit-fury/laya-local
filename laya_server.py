@@ -97,8 +97,7 @@ def download_model():
     model_path = hf_hub_download(
         repo_id=MODEL_REPO,
         repo_type="model",
-        subdirectory=MODEL_SUBFOLDER,
-        filename=MODEL_FILENAME,
+        filename=f"{MODEL_SUBFOLDER}/{MODEL_FILENAME}",
     )
     log.info("Model: %s (%.1f MB)", model_path, os.path.getsize(model_path) / (1024 * 1024))
 
