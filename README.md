@@ -146,6 +146,69 @@ if (!resp.ok) {
 
 **Inference speed:** sub-100ms on Apple Silicon GPU (CoreML/Metal), ~12s on a single ARM core without GPU. Speed varies significantly with hardware.
 
+## Browser extension
+
+A companion browser extension (Manifest V3, Chrome + Firefox) is included in the `extension/` directory. It extracts page text and sends it to the local Laya server for classification.
+
+### Files
+
+```
+extension/
+├── manifest.json    — Extension manifest (host permissions, content script, popup)
+├── background.js    — Service worker: talks to Laya server, handles messages
+├── content.js       — Content script: extracts page text, polls for results
+├── popup.html       — Popup UI: server status, classification result, action button
+├── popup.js         — Popup logic: health checks, result display, polling
+└── icons/           — Extension icons (16, 48, 128 px)
+```
+
+### Setup
+
+The extension is a separate load — it's not bundled with the server.
+
+**Chrome / Chromium:**
+
+1. Open `chrome://extensions`
+2. Enable **Developer mode** (top right)
+3. Click **Load unpacked** and select the `extension/` directory
+4. The Laya icon appears in your toolbar
+
+**Firefox:**
+
+1. Open `about:debugging#/runtime/this-firefox`
+2. Click **Load Temporary Add-on**
+3. Select `extension/manifest.json`
+
+### How it works
+
+```
+[Page] → content.js extracts text
+         → background.js receives via chrome.runtime.sendMessage
+         → background.js fetches http://localhost:8765/classify
+         → result returned to popup via chrome.storage.session
+```
+
+### Manifest permissions
+
+The extension requires `http://localhost:8765/` in `host_permissions` so the background service worker can fetch from the local server. No other permissions are needed — the content script reads page text directly from the DOM (no extra permissions required).
+
+### Popup UI
+
+Click the Laya icon in the toolbar to open the popup:
+
+- **Server status** — green dot if the server is running, red if not
+- **Classify This Page** — extracts text from the active tab and sends it for classification
+- **Result** — shows probability score with color-coded bar (green ≥ 0.7, yellow ≥ 0.4, red < 0.4)
+- **Inference time** — how long the forward pass took
+
+### Development
+
+The extension is tied to the server running on `localhost:8765`. To test:
+
+1. Start the server: `uvicorn laya_server:app --host 127.0.0.1 --port 8765`
+2. Load the extension unpacked in Chrome/Firefox
+3. Open any page, click the Laya icon, click **Classify This Page**
+
 ## Model details
 
 - **Model:** Laya typed-decisions checkpoint (Convai Innovations)
