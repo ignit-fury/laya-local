@@ -9,7 +9,7 @@
  */
 
 const LAYA_SERVER = "http://localhost:8765";
-const CLASSIFY_TIMEOUT = 30_000; // 30s max wait for inference
+const CLASSIFY_TIMEOUT = 60_000; // 60s — generous for CPU fallback
 
 // ── State ──────────────────────────────────────────────────────────────────
 

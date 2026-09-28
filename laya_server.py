@@ -129,6 +129,15 @@ def load_model():
     )
     log.info("ONNX session created. Providers: %s", _session.get_providers())
 
+    # Log which provider is actually handling inference
+    active = _session.get_providers()[0]
+    if active == "CoreMLExecutionProvider":
+        log.info("Inference will use Apple Silicon GPU via CoreML")
+    elif active == "MetalExecutionProvider":
+        log.info("Inference will use Apple GPU via Metal")
+    else:
+        log.warning("Inference will use CPU — no Apple GPU provider available")
+
     # Inspect I/O
     inputs = {inp.name: inp.shape for inp in _session.get_inputs()}
     outputs = {out.name: out.shape for out in _session.get_outputs()}
@@ -203,6 +212,8 @@ def run_inference(text: str, question: str = "") -> dict:
 
     logits = outputs[0]  # [batch, markers]
     probability = float(1.0 / (1.0 + np.exp(-logits[0][0])))  # sigmoid
+
+    log.info("Inference done: %.1fms, P(true)=%.4f", elapsed_ms, probability)
 
     return {
         "probability": round(probability, 4),

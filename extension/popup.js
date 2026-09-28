@@ -146,7 +146,7 @@ function hideError() {
 // ── Poll for classification result ─────────────────────────────────────────
 
 async function pollForResult(tabId, attempts = 0) {
-  if (attempts > 60) { // 30s total (500ms interval)
+  if (attempts > 120) { // 60s total (500ms interval)
     showError("Classification timed out — server may be overloaded");
     classifyBtn.disabled = false;
     classifyBtn.textContent = "Classify This Page";
